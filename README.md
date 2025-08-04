@@ -1,70 +1,70 @@
 # Restaurant Management System
 
-A comprehensive Java-based restaurant management system built with JDBC and PostgreSQL, featuring complete order management, billing, table booking, and customer management capabilities.
+A robust Java-based restaurant management solution leveraging JDBC and PostgreSQL technologies, delivering comprehensive functionality for order processing, billing operations, table reservations, and customer relationship management.
 
-## 🚀 Features
+## ✨ Key Features
 
-### Core Functionality
-- **User Management**: Role-based access for Managers, Waiters, and Kitchen Staff
-- **Customer Management**: Customer registration and profile management
-- **Table Management**: Table allocation, status tracking, and capacity management
-- **Order Management**: Complete order lifecycle from placement to completion
-- **Billing System**: Automated bill generation with tax and discount calculations
-- **Payment Processing**: Multiple payment methods (Cash, Card, UPI, Wallet)
-- **Table Booking**: Advance table reservations with date/time management
-- **Sales Reporting**: Daily sales reports and analytics
+### Primary Capabilities
+- **User Administration**: Role-based authentication system supporting Managers, Waiters, and Kitchen Personnel
+- **Customer Relations**: Complete customer registration and profile administration
+- **Table Operations**: Dynamic table allocation with real-time status monitoring and capacity oversight
+- **Order Processing**: End-to-end order lifecycle management from initial placement through completion
+- **Financial Management**: Automated invoice generation incorporating tax calculations and discount applications
+- **Transaction Processing**: Multi-channel payment acceptance (Cash, Card, UPI, Digital Wallet)
+- **Reservation System**: Advanced table booking with comprehensive date/time scheduling
+- **Analytics Dashboard**: Comprehensive sales reporting and business intelligence
 
-### Technical Features
-- **DAO Pattern**: Clean separation of data access logic
-- **Service Layer**: Business logic abstraction
-- **Factory Pattern**: Centralized DAO creation and management
-- **PostgreSQL Integration**: Robust database connectivity
-- **Console-based UI**: Interactive command-line interface
+### Technical Architecture
+- **Data Access Layer**: Implements DAO pattern for clean data abstraction
+- **Business Logic**: Dedicated service layer for application logic separation
+- **Object Creation**: Factory pattern implementation for centralized DAO instantiation
+- **Database Integration**: Seamless PostgreSQL connectivity and transaction management
+- **User Interface**: Interactive command-line interface with intuitive navigation
 
-## 🏗️ Architecture
+## �️ System Architecture
 
-The project follows a layered architecture pattern:
+The application employs a sophisticated layered architecture approach:
 
 ```
 src/main/java/org/example/
-├── model/              # Entity classes (User, Customer, Order, etc.)
-├── dao/               # Data Access Objects
-│   ├── interfaces/    # DAO interfaces
-│   └── impl/          # DAO implementations
-├── service/           # Business logic layer
-│   ├── interfaces/    # Service interfaces
-│   └── impl/          # Service implementations
-├── controller/        # UI controllers
-├── util/              # Utility classes (DatabaseUtil)
-└── Main.java          # Application entry point
+├── model/              # Domain entities (User, Customer, Order, etc.)
+├── dao/               # Data persistence layer
+│   ├── interfaces/    # Contract definitions for data access
+│   └── impl/          # Concrete DAO implementations
+├── service/           # Application business logic
+│   ├── interfaces/    # Service contract definitions
+│   └── impl/          # Business logic implementations
+├── controller/        # Presentation layer controllers
+├── util/              # System utilities (DatabaseUtil)
+└── Main.java          # Application bootstrap
 ```
 
-## 📋 Prerequisites
+## 📋 System Requirements
 
-- **Java 17** or higher
-- **PostgreSQL 12** or higher
-- **Maven 3.6** or higher
+- **Java Runtime**: Version 17 or later
+- **Database**: PostgreSQL 12 or later
+- **Build Tool**: Maven 3.6 or later
 
-## 🛠️ Installation & Setup
+## � Installation Guide
 
-### 1. Clone the Repository
+### 1. Repository Setup
 ```bash
 git clone <repository-url>
 cd restaurant-management-system
 ```
 
-### 2. Database Setup
+### 2. Database Configuration
 
-Create a PostgreSQL database and tables:
+Initialize PostgreSQL database with required schema:
 
 ```sql
--- Create database
+-- Database creation
 CREATE DATABASE restaurant_management;
 
--- Connect to the database and create tables
+-- Schema initialization
 \c restaurant_management;
 
--- Users table
+-- User accounts table
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Customers table
+-- Customer registry table
 CREATE TABLE customers (
     customer_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE customers (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tables table
+-- Restaurant tables registry
 CREATE TABLE tables (
     table_id SERIAL PRIMARY KEY,
     table_number INTEGER UNIQUE NOT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE tables (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Orders table
+-- Order tracking table
 CREATE TABLE orders (
     order_id SERIAL PRIMARY KEY,
     table_id INTEGER REFERENCES tables(table_id),
@@ -110,7 +110,7 @@ CREATE TABLE orders (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Bills table
+-- Billing information table
 CREATE TABLE bills (
     bill_id SERIAL PRIMARY KEY,
     order_id INTEGER REFERENCES orders(order_id),
@@ -123,7 +123,7 @@ CREATE TABLE bills (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Payments table
+-- Payment transactions table
 CREATE TABLE payments (
     payment_id SERIAL PRIMARY KEY,
     bill_id INTEGER REFERENCES bills(bill_id),
@@ -134,7 +134,7 @@ CREATE TABLE payments (
     status VARCHAR(20) DEFAULT 'Successful'
 );
 
--- Table Bookings table
+-- Reservation management table
 CREATE TABLE table_bookings (
     booking_id SERIAL PRIMARY KEY,
     customer_id INTEGER REFERENCES customers(customer_id),
@@ -149,9 +149,9 @@ CREATE TABLE table_bookings (
 );
 ```
 
-### 3. Configure Database Connection
+### 3. Database Connection Setup
 
-Update database credentials in `src/main/java/org/example/util/DatabaseUtil.java`:
+Configure database credentials in `src/main/java/org/example/util/DatabaseUtil.java`:
 
 ```java
 private static final String URL = "jdbc:postgresql://localhost:5432/restaurant_management";
@@ -159,21 +159,21 @@ private static final String USER = "your_username";
 private static final String PASSWORD = "your_password";
 ```
 
-### 4. Build and Run
+### 4. Application Deployment
 
 ```bash
-# Compile the project
+# Project compilation
 mvn clean compile
 
-# Run the application
+# Application execution
 mvn exec:java -Dexec.mainClass="org.example.Main"
 ```
 
-## 🎯 Usage
+## � Application Usage
 
-### Main Menu Options
+### Primary Navigation Menu
 
-When you run the application, you'll see:
+Upon application launch, the following options are presented:
 
 ```
 === Restaurant Management System ===
@@ -187,57 +187,57 @@ When you run the application, you'll see:
 8. Exit
 ```
 
-### Sample Workflows
+### Operational Workflows
 
-#### 1. Setting Up the System
+#### 1. Initial System Configuration
 ```
-1. Add Users (Manager, Waiters, Kitchen Staff)
-2. Add Tables (Configure table numbers and capacity)
-3. Add Customers (Register customer profiles)
-```
-
-#### 2. Order Management Workflow
-```
-1. Customer arrives → Check available tables
-2. Seat customer → Waiter takes order
-3. Order placed → Status: "Placed"
-4. Kitchen prepares → Status: "Preparing"
-5. Food served → Status: "Served"
-6. Customer finishes → Status: "Completed"
+1. Configure User Accounts (Manager, Waiters, Kitchen Personnel)
+2. Initialize Table Configuration (table numbers and seating capacity)
+3. Register Customer Database (customer profile creation)
 ```
 
-#### 3. Billing Workflow
+#### 2. Order Processing Pipeline
 ```
-1. Generate bill for completed order
-2. Apply discounts and calculate tax
-3. Present bill to customer
-4. Process payment (Cash/Card/UPI/Wallet)
-5. Update payment status
-6. Clear table for next customer
-```
-
-#### 4. Table Booking Workflow
-```
-1. Customer requests reservation
-2. Check table availability for date/time
-3. Create booking record
-4. Confirm reservation
-5. Update table status to "Reserved"
+1. Customer arrival → Verify table availability
+2. Customer seating → Waiter assignment
+3. Order placement → Status: "Placed"
+4. Kitchen preparation → Status: "Preparing"
+5. Food service → Status: "Served"
+6. Order completion → Status: "Completed"
 ```
 
-## 📊 Database Schema
+#### 3. Financial Processing Pipeline
+```
+1. Invoice generation for completed orders
+2. Discount application and tax computation
+3. Customer bill presentation
+4. Payment processing (Cash/Card/UPI/Wallet)
+5. Payment status confirmation
+6. Table availability restoration
+```
 
-### Key Entities
+#### 4. Reservation Management Pipeline
+```
+1. Customer reservation request
+2. Table availability verification for requested date/time
+3. Booking record creation
+4. Reservation confirmation
+5. Table status update to "Reserved"
+```
 
-- **Users**: System users with roles (Manager, Waiter, KitchenStaff)
-- **Customers**: Restaurant customers and their profiles
-- **Tables**: Restaurant tables with capacity and status
-- **Orders**: Customer orders with items and status tracking
-- **Bills**: Generated bills with tax and discount calculations
-- **Payments**: Payment records with multiple payment methods
-- **Table Bookings**: Advance reservations with date/time
+## 📊 Database Schema Overview
 
-### Entity Relationships
+### Core Business Entities
+
+- **Users**: System operators with designated roles (Manager, Waiter, KitchenStaff)
+- **Customers**: Restaurant patrons and their contact information
+- **Tables**: Physical restaurant tables with capacity and availability status
+- **Orders**: Customer orders with comprehensive item tracking and status monitoring
+- **Bills**: Financial documents with tax calculations and discount applications
+- **Payments**: Transaction records supporting multiple payment channels
+- **Table Bookings**: Advance reservations with comprehensive scheduling information
+
+### Relationship Structure
 
 ```mermaid
 erDiagram
@@ -343,39 +343,39 @@ erDiagram
         INT generated_by FK
     }
 
-    %% Relationships
-    Customer ||--o{ TableBooking : makes
-    Table ||--o{ TableBooking : is_booked_in
-    User ||--o{ Employee : is
-    Employee ||--o{ Order : takes
-    Table ||--o{ Order : is_for
-    Order ||--o{ OrderItem : contains
-    MenuItem ||--o{ OrderItem : is_part_of
+    %% Entity Relationships
+    Customer ||--o{ TableBooking : creates
+    Table ||--o{ TableBooking : accommodates
+    User ||--o{ Employee : represents
+    Employee ||--o{ Order : processes
+    Table ||--o{ Order : serves
+    Order ||--o{ OrderItem : includes
+    MenuItem ||--o{ OrderItem : comprises
     Order ||--|| Bill : generates
-    Bill ||--|| Payment : is_paid_by
-    User ||--o{ SalesReport : generates
+    Bill ||--|| Payment : settles
+    User ||--o{ SalesReport : produces
 
 ```
 
-## 🔧 Configuration
+## ⚙️ System Configuration
 
-### Application Properties
-- Database URL: `jdbc:postgresql://localhost:5432/restaurant_management`
-- Driver: `org.postgresql.Driver`
-- Connection pooling: Basic connection management
+### Database Connection Properties
+- Connection URL: `jdbc:postgresql://localhost:5432/restaurant_management`
+- JDBC Driver: `org.postgresql.Driver`
+- Connection Management: Basic pooling implementation
 
-### User Roles and Permissions
-- **Manager**: Full system access, user management, reports
-- **Waiter**: Order management, customer service, billing
-- **KitchenStaff**: Order status updates, kitchen operations
+### Authorization and Access Control
+- **Manager**: Complete system administration, user management, reporting capabilities
+- **Waiter**: Order processing, customer service, billing operations
+- **KitchenStaff**: Order status management, kitchen workflow operations
 
-## 🎨 System Diagrams
+## 🎨 System Design Documentation
 
-### Class Diagram
+### Class Architecture
 
 ```mermaid
 classDiagram
-    %% Model Classes
+    %% Domain Models
     class User {
         -int userId
         -String username
@@ -421,92 +421,7 @@ classDiagram
         +setStatus(Status) void
     }
 
-    class Order {
-        -int orderId
-        -int tableId
-        -int waiterId
-        -Timestamp orderTime
-        -Status status
-        -double totalAmount
-        +getOrderId() int
-        +setOrderId(int) void
-        +getTableId() int
-        +setTableId(int) void
-        +getStatus() Status
-        +setStatus(Status) void
-    }
-
-    class Bill {
-        -int billId
-        -int orderId
-        -double totalAmount
-        -double discount
-        -double tax
-        -double finalAmount
-        -PaymentStatus paymentStatus
-        -Timestamp generatedAt
-        +getBillId() int
-        +setBillId(int) void
-        +calculateFinalAmount() void
-        +getPaymentStatus() PaymentStatus
-    }
-
-    class Payment {
-        -int paymentId
-        -int billId
-        -PaymentMethod paymentMethod
-        -double amountPaid
-        -Timestamp paymentTime
-        -Status status
-        +getPaymentId() int
-        +setPaymentId(int) void
-        +getPaymentMethod() PaymentMethod
-        +processPayment() void
-    }
-
-    class TableBooking {
-        -int bookingId
-        -int customerId
-        -int tableId
-        -Date bookingDate
-        -Time bookingTime
-        -int partySize
-        -Status status
-        -Timestamp createdAt
-        +getBookingId() int
-        +setBookingId(int) void
-        +confirmBooking() void
-        +cancelBooking() void
-    }
-
-    %% DAO Interfaces
-    class UserDao {
-        <<interface>>
-        +addUser(User) void
-        +getUserById(int) User
-        +getAllUsers() List
-        +updateUser(User) void
-        +deleteUser(int) void
-    }
-
-    class OrderDao {
-        <<interface>>
-        +addOrder(Order) void
-        +getOrderById(int) Order
-        +getAllOrders() List
-        +updateOrder(Order) void
-        +deleteOrder(int) void
-    }
-
-    class BillDao {
-        <<interface>>
-        +generateBill(Bill) void
-        +getBillByOrderId(int) Bill
-        +getUnpaidBills() List
-        +updateBill(Bill) void
-    }
-
-    %% DAO Implementations
+    %% Data Access Implementations
     class UserDaoImpl {
         -Connection connection
         +addUser(User) void
@@ -525,7 +440,7 @@ classDiagram
         +deleteOrder(int) void
     }
 
-    %% Factory
+    %% Factory Implementation
     class RestaurantDaoFactory {
         +getUserDAO() UserDao
         +getOrderDAO() OrderDao
@@ -536,7 +451,7 @@ classDiagram
         +getTableBookingDAO() TableBookingDao
     }
 
-    %% Utility
+    %% Database Utility
     class DatabaseUtil {
         -String URL
         -String USER
@@ -545,7 +460,7 @@ classDiagram
         +closeConnection(Connection) void
     }
 
-    %% Relationships
+    %% Entity Relationships
     Order --> Bill
     Bill --> Payment
     Customer --> TableBooking
@@ -561,7 +476,7 @@ classDiagram
     OrderDaoImpl --> DatabaseUtil
 ```
 
-### Use Case Diagram
+### Use Case Architecture
 
 ```mermaid
 flowchart TD
@@ -600,9 +515,9 @@ flowchart TD
     Customer -.-> UC8
 ```
 
-### Sequence Diagrams
+### Process Flow Documentation
 
-#### Order Placement Sequence
+#### Order Processing Sequence
 
 ```mermaid
 sequenceDiagram
@@ -649,7 +564,7 @@ sequenceDiagram
     S->>DB: Update order status
 ```
 
-#### Billing Process Sequence
+#### Financial Processing Sequence
 
 ```mermaid
 sequenceDiagram
@@ -694,7 +609,7 @@ sequenceDiagram
     W-->>C: Payment receipt
 ```
 
-#### Table Booking Sequence
+#### Reservation Management Sequence
 
 ```mermaid
 sequenceDiagram
@@ -750,7 +665,7 @@ sequenceDiagram
     end
 ```
 
-### Activity Diagrams
+### Activity Flow Documentation
 
 #### Order Placement Workflow
 
@@ -796,7 +711,7 @@ flowchart TD
     AA --> BB[Order Process Complete]
 ```
 
-#### Billing Workflow
+#### Financial Processing Workflow
 
 ```mermaid
 flowchart TD
@@ -844,7 +759,7 @@ flowchart TD
     CC --> DD[Proceed to Payment]
 ```
 
-#### Table Booking Workflow
+#### Reservation Management Workflow
 
 ```mermaid
 flowchart TD
@@ -907,10 +822,6 @@ flowchart TD
     LL --> MM[Monitor for Customer Arrival]
 ```
 
-
-
 ---
 
-**Built with ❤️ for efficient restaurant management**
-# RMS_Zeta
-# RMS_Zeta
+**Engineered with precision for optimal restaurant operations**
