@@ -14,11 +14,12 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            RestaurantDaoFactory daoFactory = new RestaurantDaoFactory(conn);
-            Scanner scanner = new Scanner(System.in);
+        try (Connection dbConnection = DatabaseUtil.getConnection()) {
+            RestaurantDaoFactory factory = new RestaurantDaoFactory(dbConnection);
+            Scanner inputReader = new Scanner(System.in);
 
-            while (true) {
+            boolean isRunning = true;
+            while (isRunning) {
                 System.out.println("\n=== Restaurant Management System ===");
                 System.out.println("1. User Management");
                 System.out.println("2. Customer Management");
@@ -29,33 +30,34 @@ public class Main {
                 System.out.println("7. Table Booking Management");
                 System.out.println("8. Exit");
                 System.out.print("Choose an option: ");
-                int choice = scanner.nextInt();
-                scanner.nextLine();
+                int selectedOption = inputReader.nextInt();
+                inputReader.nextLine();
 
-                switch (choice) {
-                    case 1 -> handleUserManagement(daoFactory, scanner);
-                    case 2 -> handleCustomerManagement(daoFactory, scanner);
-                    case 3 -> handleTableManagement(daoFactory, scanner);
-                    case 4 -> handleOrderManagement(daoFactory, scanner);
-                    case 5 -> handleBillManagement(daoFactory, scanner);
-                    case 6 -> handlePaymentManagement(daoFactory, scanner);
-                    case 7 -> handleTableBookingManagement(daoFactory, scanner);
+                switch (selectedOption) {
+                    case 1 -> manageUsers(factory, inputReader);
+                    case 2 -> manageCustomers(factory, inputReader);
+                    case 3 -> manageTables(factory, inputReader);
+                    case 4 -> manageOrders(factory, inputReader);
+                    case 5 -> manageBills(factory, inputReader);
+                    case 6 -> managePayments(factory, inputReader);
+                    case 7 -> manageTableBookings(factory, inputReader);
                     case 8 -> {
                         System.out.println("Exiting...");
-                        return;
+                        isRunning = false;
                     }
                     default -> System.out.println("Invalid option. Try again.");
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
-    private static void handleUserManagement(RestaurantDaoFactory daoFactory, Scanner scanner) {
-        UserDao userDAO = daoFactory.getUserDAO();
+    private static void manageUsers(RestaurantDaoFactory factory, Scanner inputReader) {
+        UserDao userRepository = factory.getUserDAO();
 
-        while (true) {
+        boolean continueUserManagement = true;
+        while (continueUserManagement) {
             System.out.println("\n=== User Management ===");
             System.out.println("1. Add User");
             System.out.println("2. View All Users");
@@ -63,46 +65,46 @@ public class Main {
             System.out.println("4. Delete User");
             System.out.println("5. Exit");
             System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int userChoice = inputReader.nextInt();
+            inputReader.nextLine();
 
-            switch (choice) {
+            switch (userChoice) {
                 case 1:
-                    User user = new User();
+                    User newUser = new User();
                     System.out.print("Username: ");
-                    user.setUsername(scanner.nextLine());
+                    newUser.setUsername(inputReader.nextLine());
                     System.out.print("Password: ");
-                    user.setPassword(scanner.nextLine());
+                    newUser.setPassword(inputReader.nextLine());
                     System.out.print("Email: ");
-                    user.setEmail(scanner.nextLine());
+                    newUser.setEmail(inputReader.nextLine());
                     System.out.print("Phone: ");
-                    user.setPhone(scanner.nextLine());
+                    newUser.setPhone(inputReader.nextLine());
                     System.out.print("Role (Manager/Waiter/KitchenStaff): ");
-                    user.setRole(User.Role.valueOf(scanner.nextLine()));
-                    user.setActive(true);
-                    user.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-                    userDAO.addUser(user);
+                    newUser.setRole(User.Role.valueOf(inputReader.nextLine()));
+                    newUser.setActive(true);
+                    newUser.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                    userRepository.addUser(newUser);
                     System.out.println("User added successfully.");
                     break;
 
                 case 2:
-                    List<User> users = userDAO.getAllUsers();
+                    List<User> allUsers = userRepository.getAllUsers();
                     System.out.println("---- Users ----");
-                    for (User u : users) {
-                        System.out.println(u.getUserId() + ": " + u.getUsername() + " | " + u.getRole() + " | " + u.getEmail());
+                    for (User currentUser : allUsers) {
+                        System.out.println(currentUser.getUserId() + ": " + currentUser.getUsername() + " | " + currentUser.getRole() + " | " + currentUser.getEmail());
                     }
                     break;
 
                 case 3:
                     System.out.print("Enter User ID to update: ");
-                    int updateId = scanner.nextInt();
-                    scanner.nextLine();
+                    int userIdToUpdate = inputReader.nextInt();
+                    inputReader.nextLine();
                     System.out.print("New Email: ");
-                    String newEmail = scanner.nextLine();
-                    User userToUpdate = userDAO.getUserById(updateId);
-                    if (userToUpdate != null) {
-                        userToUpdate.setEmail(newEmail);
-                        userDAO.updateUser(userToUpdate);
+                    String updatedEmail = inputReader.nextLine();
+                    User existingUser = userRepository.getUserById(userIdToUpdate);
+                    if (existingUser != null) {
+                        existingUser.setEmail(updatedEmail);
+                        userRepository.updateUser(existingUser);
                         System.out.println("Email updated.");
                     } else {
                         System.out.println("User not found.");
@@ -111,13 +113,14 @@ public class Main {
 
                 case 4:
                     System.out.print("Enter User ID to delete: ");
-                    int deleteId = scanner.nextInt();
-                    userDAO.deleteUser(deleteId);
+                    int userIdToDelete = inputReader.nextInt();
+                    userRepository.deleteUser(userIdToDelete);
                     System.out.println("User deleted.");
                     break;
 
                 case 5:
-                    return;
+                    continueUserManagement = false;
+                    break;
 
                 default:
                     System.out.println("Invalid option. Try again.");
@@ -125,10 +128,11 @@ public class Main {
         }
     }
 
-    private static void handleCustomerManagement(RestaurantDaoFactory daoFactory, Scanner scanner) {
-        CustomerDao customerDAO = daoFactory.getCustomerDAO();
+    private static void manageCustomers(RestaurantDaoFactory factory, Scanner inputReader) {
+        CustomerDao customerRepository = factory.getCustomerDAO();
 
-        while (true) {
+        boolean continueCustomerManagement = true;
+        while (continueCustomerManagement) {
             System.out.println("\n=== Customer Management ===");
             System.out.println("1. Add Customer");
             System.out.println("2. View All Customers");
@@ -136,45 +140,45 @@ public class Main {
             System.out.println("4. Delete Customer");
             System.out.println("5. Exit");
             System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int customerChoice = inputReader.nextInt();
+            inputReader.nextLine();
 
-            switch (choice) {
+            switch (customerChoice) {
                 case 1:
-                    Customer customer = new Customer();
+                    Customer newCustomer = new Customer();
                     System.out.print("Name: ");
-                    customer.setName(scanner.nextLine());
+                    newCustomer.setName(inputReader.nextLine());
                     System.out.print("Phone: ");
-                    customer.setPhone(scanner.nextLine());
+                    newCustomer.setPhone(inputReader.nextLine());
                     System.out.print("Email: ");
-                    customer.setEmail(scanner.nextLine());
-                    customer.setActive(true);
-                    customer.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-                    customerDAO.addCustomer(customer);
+                    newCustomer.setEmail(inputReader.nextLine());
+                    newCustomer.setActive(true);
+                    newCustomer.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                    customerRepository.addCustomer(newCustomer);
                     System.out.println("Customer added successfully.");
                     break;
 
                 case 2:
-                    List<Customer> customers = customerDAO.getAllCustomers();
+                    List<Customer> allCustomers = customerRepository.getAllCustomers();
                     System.out.println("---- Customers ----");
-                    for (Customer c : customers) {
-                        System.out.println(c.getCustomerId() + ": " + c.getName() + " | " + c.getPhone() + " | " + c.getEmail());
+                    for (Customer currentCustomer : allCustomers) {
+                        System.out.println(currentCustomer.getCustomerId() + ": " + currentCustomer.getName() + " | " + currentCustomer.getPhone() + " | " + currentCustomer.getEmail());
                     }
                     break;
 
                 case 3:
                     System.out.print("Enter Customer ID to update: ");
-                    int updateId = scanner.nextInt();
-                    scanner.nextLine();
-                    Customer customerToUpdate = customerDAO.getCustomerById(updateId);
-                    if (customerToUpdate != null) {
+                    int customerIdToUpdate = inputReader.nextInt();
+                    inputReader.nextLine();
+                    Customer existingCustomer = customerRepository.getCustomerById(customerIdToUpdate);
+                    if (existingCustomer != null) {
                         System.out.print("New Name: ");
-                        customerToUpdate.setName(scanner.nextLine());
+                        existingCustomer.setName(inputReader.nextLine());
                         System.out.print("New Phone: ");
-                        customerToUpdate.setPhone(scanner.nextLine());
+                        existingCustomer.setPhone(inputReader.nextLine());
                         System.out.print("New Email: ");
-                        customerToUpdate.setEmail(scanner.nextLine());
-                        customerDAO.updateCustomer(customerToUpdate);
+                        existingCustomer.setEmail(inputReader.nextLine());
+                        customerRepository.updateCustomer(existingCustomer);
                         System.out.println("Customer updated.");
                     } else {
                         System.out.println("Customer not found.");
@@ -183,23 +187,25 @@ public class Main {
 
                 case 4:
                     System.out.print("Enter Customer ID to delete: ");
-                    int deleteId = scanner.nextInt();
-                    customerDAO.deleteCustomer(deleteId);
+                    int customerIdToDelete = inputReader.nextInt();
+                    customerRepository.deleteCustomer(customerIdToDelete);
                     System.out.println("Customer deleted.");
                     break;
 
                 case 5:
-                    return;
+                    continueCustomerManagement = false;
+                    break;
 
                 default:
                     System.out.println("Invalid option. Try again.");
             }
         }
     }
-    private static void handleTableManagement(RestaurantDaoFactory daoFactory, Scanner scanner) {
-        TableDao tableDAO = daoFactory.getTableDAO();
+    private static void manageTables(RestaurantDaoFactory factory, Scanner inputReader) {
+        TableDao tableRepository = factory.getTableDAO();
 
-        while (true) {
+        boolean continueTableManagement = true;
+        while (continueTableManagement) {
             System.out.println("\n=== Table Management ===");
             System.out.println("1. Add Table");
             System.out.println("2. View All Tables");
@@ -207,75 +213,76 @@ public class Main {
             System.out.println("4. Delete Table");
             System.out.println("5. Exit");
             System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int tableChoice = inputReader.nextInt();
+            inputReader.nextLine();
 
-            switch (choice) {
+            switch (tableChoice) {
                 case 1 -> {
-                    Table table = new Table();
+                    Table newTable = new Table();
                     System.out.print("Table Number: ");
-                    table.setTableNumber(scanner.nextInt());
+                    newTable.setTableNumber(inputReader.nextInt());
                     System.out.print("Capacity: ");
-                    table.setCapacity(scanner.nextInt());
-                    table.setStatus(Table.Status.Available);
-                    tableDAO.addTable(table);
+                    newTable.setCapacity(inputReader.nextInt());
+                    newTable.setStatus(Table.Status.Available);
+                    tableRepository.addTable(newTable);
                     System.out.println("Table added successfully.");
                 }
                 case 2 -> {
-                    List<Table> tables = tableDAO.getAllTables();
+                    List<Table> allTables = tableRepository.getAllTables();
                     System.out.println("---- Tables ----");
-                    for (Table t : tables) {
-                        System.out.println(t.getTableId() + ": Table " + t.getTableNumber() + " | Capacity: " + t.getCapacity() + " | Status: " + t.getStatus());
+                    for (Table currentTable : allTables) {
+                        System.out.println(currentTable.getTableId() + ": Table " + currentTable.getTableNumber() + " | Capacity: " + currentTable.getCapacity() + " | Status: " + currentTable.getStatus());
                     }
                 }
                 case 3 -> {
-                    List<Table> allTables = tableDAO.getAllTables();
+                    List<Table> tableList = tableRepository.getAllTables();
                     System.out.println("---- Tables ----");
-                    for (Table t : allTables) {
-                        System.out.println(t.getTableId() + ": Table " + t.getTableNumber() + " | Capacity: " + t.getCapacity() + " | Status: " + t.getStatus());
+                    for (Table currentTable : tableList) {
+                        System.out.println(currentTable.getTableId() + ": Table " + currentTable.getTableNumber() + " | Capacity: " + currentTable.getCapacity() + " | Status: " + currentTable.getStatus());
                     }
                     System.out.print("Enter Table ID to update: ");
-                    int updateId = scanner.nextInt();
-                    scanner.nextLine();
-                    Table tableToUpdate = tableDAO.getTableById(updateId);
-                    if (tableToUpdate != null) {
+                    int tableIdToUpdate = inputReader.nextInt();
+                    inputReader.nextLine();
+                    Table existingTable = tableRepository.getTableById(tableIdToUpdate);
+                    if (existingTable != null) {
                         System.out.print("New Table Number: ");
-                        tableToUpdate.setTableNumber(scanner.nextInt());
+                        existingTable.setTableNumber(inputReader.nextInt());
                         System.out.print("New Capacity: ");
-                        tableToUpdate.setCapacity(scanner.nextInt());
-                        scanner.nextLine();
+                        existingTable.setCapacity(inputReader.nextInt());
+                        inputReader.nextLine();
                         System.out.print("Status (Available/Occupied/Booked/Reserved): ");
-                        tableToUpdate.setStatus(Table.Status.valueOf(scanner.nextLine()));
-                        tableDAO.updateTable(tableToUpdate);
+                        existingTable.setStatus(Table.Status.valueOf(inputReader.nextLine()));
+                        tableRepository.updateTable(existingTable);
                         System.out.println("Table updated.");
                     } else {
                         System.out.println("Table not found.");
                     }
                 }
                 case 4 -> {
-                    List<Table> allTables = tableDAO.getAllTables();
+                    List<Table> tableList = tableRepository.getAllTables();
                     System.out.println("---- Tables ----");
-                    for (Table t : allTables) {
-                        System.out.println(t.getTableId() + ": Table " + t.getTableNumber() + " | Capacity: " + t.getCapacity() + " | Status: " + t.getStatus());
+                    for (Table currentTable : tableList) {
+                        System.out.println(currentTable.getTableId() + ": Table " + currentTable.getTableNumber() + " | Capacity: " + currentTable.getCapacity() + " | Status: " + currentTable.getStatus());
                     }
                     System.out.print("Enter Table ID to delete: ");
-                    int deleteId = scanner.nextInt();
-                    scanner.nextLine();
-                    tableDAO.deleteTable(deleteId);
+                    int tableIdToDelete = inputReader.nextInt();
+                    inputReader.nextLine();
+                    tableRepository.deleteTable(tableIdToDelete);
                     System.out.println("Table deleted.");
                 }
                 case 5 -> {
-                    return;
+                    continueTableManagement = false;
                 }
                 default -> System.out.println("Invalid option. Try again.");
             }
         }
     }
-    private static void handleOrderManagement(RestaurantDaoFactory daoFactory, Scanner scanner) {
-        OrderDao orderDAO = daoFactory.getOrderDAO();
-        TableDao tableDAO = daoFactory.getTableDAO();
+    private static void manageOrders(RestaurantDaoFactory factory, Scanner inputReader) {
+        OrderDao orderRepository = factory.getOrderDAO();
+        TableDao tableRepository = factory.getTableDAO();
 
-        while (true) {
+        boolean continueOrderManagement = true;
+        while (continueOrderManagement) {
             System.out.println("\n=== Order Management ===");
             System.out.println("1. Add Order");
             System.out.println("2. View All Orders");
@@ -283,79 +290,76 @@ public class Main {
             System.out.println("4. Delete Order");
             System.out.println("5. Exit");
             System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int orderChoice = inputReader.nextInt();
+            inputReader.nextLine();
 
-            switch (choice) {
+            switch (orderChoice) {
                 case 1:
-                    // Show only available tables before taking input
-                    List<Table> availableTables = tableDAO.getAllTables().stream()
-                        .filter(t -> t.getStatus() == Table.Status.Available)
+                    List<Table> freeTablesList = tableRepository.getAllTables().stream()
+                        .filter(table -> table.getStatus() == Table.Status.Available)
                         .toList();
                     
-                    if (availableTables.isEmpty()) {
+                    if (freeTablesList.isEmpty()) {
                         System.out.println("No available tables at the moment.");
                         break;
                     }
                     
                     System.out.println("---- Available Tables ----");
-                    for (Table t : availableTables) {
-                        System.out.println("ID: " + t.getTableId() + " | Table #: " + t.getTableNumber() + " | Status: " + t.getStatus());
+                    for (Table availableTable : freeTablesList) {
+                        System.out.println("ID: " + availableTable.getTableId() + " | Table #: " + availableTable.getTableNumber() + " | Status: " + availableTable.getStatus());
                     }
 
-                    Order order = new Order();
+                    Order newOrder = new Order();
 
                     System.out.print("Table ID: ");
-                    int tableId = scanner.nextInt();
-                    scanner.nextLine();
+                    int selectedTableId = inputReader.nextInt();
+                    inputReader.nextLine();
 
-                    // Check if selected table is actually available
-                    Table selectedTable = tableDAO.getTableById(tableId);
-                    if (selectedTable == null || selectedTable.getStatus() != Table.Status.Available) {
+                    Table chosenTable = tableRepository.getTableById(selectedTableId);
+                    if (chosenTable == null || chosenTable.getStatus() != Table.Status.Available) {
                         System.out.println("Invalid Table ID or table is not available. Please select from available tables only.");
                         break;
                     }
 
                     System.out.print("Waiter ID: ");
-                    order.setWaiterId(scanner.nextInt());
-                    scanner.nextLine();
+                    newOrder.setWaiterId(inputReader.nextInt());
+                    inputReader.nextLine();
 
-                    order.setTableId(tableId);
-                    order.setOrderTime(new Timestamp(System.currentTimeMillis()));
-                    order.setStatus(Order.Status.Placed);
-                    orderDAO.addOrder(order);
+                    newOrder.setTableId(selectedTableId);
+                    newOrder.setOrderTime(new Timestamp(System.currentTimeMillis()));
+                    newOrder.setStatus(Order.Status.Placed);
+                    orderRepository.addOrder(newOrder);
                     
-                    // Update table status to Occupied when order is placed
-                    selectedTable.setStatus(Table.Status.Occupied);
-                    tableDAO.updateTable(selectedTable);
+                    chosenTable.setStatus(Table.Status.Occupied);
+                    tableRepository.updateTable(chosenTable);
                     
                     System.out.println("Order added successfully.");
                     break;
 
                 case 2:
-                    List<Order> orders = orderDAO.getAllOrders();
+                    List<Order> allOrders = orderRepository.getAllOrders();
                     System.out.println("---- Orders ----");
-                    for (Order o : orders) {
-                        System.out.println(o.getOrderId() + ": Table " + o.getTableId() + " | Waiter: " + o.getWaiterId() + " | Status: " + o.getStatus());
+                    for (Order currentOrder : allOrders) {
+                        System.out.println(currentOrder.getOrderId() + ": Table " + currentOrder.getTableId() + " | Waiter: " + currentOrder.getWaiterId() + " | Status: " + currentOrder.getStatus());
                     }
                     break;
 
                 case 3:
                     System.out.print("Enter Order ID to update: ");
-                    int updateId = scanner.nextInt();
-                    scanner.nextLine();
+                    int orderIdToUpdate = inputReader.nextInt();
+                    inputReader.nextLine();
 
-                    Order orderToUpdate = orderDAO.getOrderById(updateId);
-                    if (orderToUpdate != null) {
+                    Order existingOrder = orderRepository.getOrderById(orderIdToUpdate);
+                    if (existingOrder != null) {
                         System.out.print("New Status (Placed/Preparing/Served/Completed): ");
-                        String statusInput = scanner.nextLine().trim();
+                        String statusInput = inputReader.nextLine().trim();
 
                         try {
-                            Order.Status newStatus = Order.Status.valueOf(statusInput);
-                            orderToUpdate.setStatus(newStatus);
-                            orderDAO.updateOrder(orderToUpdate);
+                            Order.Status updatedStatus = Order.Status.valueOf(statusInput);
+                            existingOrder.setStatus(updatedStatus);
+                            orderRepository.updateOrder(existingOrder);
                             System.out.println("Order status updated.");
-                        } catch (IllegalArgumentException e) {
+                        } catch (IllegalArgumentException ex) {
                             System.out.println("Invalid status. Please use one of: Placed, Preparing, Served, Completed.");
                         }
                     } else {
@@ -365,73 +369,74 @@ public class Main {
 
                 case 4:
                     System.out.print("Enter Order ID to delete: ");
-                    int deleteId = scanner.nextInt();
-                    scanner.nextLine();
-                    orderDAO.deleteOrder(deleteId);
+                    int orderIdToDelete = inputReader.nextInt();
+                    inputReader.nextLine();
+                    orderRepository.deleteOrder(orderIdToDelete);
                     System.out.println("Order deleted.");
                     break;
 
                 case 5:
-                    return;
+                    continueOrderManagement = false;
+                    break;
 
                 default:
                     System.out.println("Invalid option. Try again.");
             }
-
-
         }
     }
 
-    private static void handlePaymentManagement(RestaurantDaoFactory daoFactory, Scanner scanner) {
-        PaymentDao paymentDAO = daoFactory.getPaymentDAO();
+    private static void managePayments(RestaurantDaoFactory factory, Scanner inputReader) {
+        PaymentDao paymentRepository = factory.getPaymentDAO();
 
-        while (true) {
+        boolean continuePaymentManagement = true;
+        while (continuePaymentManagement) {
             System.out.println("\n=== Payment Management ===");
             System.out.println("1. Record Payment");
             System.out.println("2. View All Payments");
             System.out.println("3. View Payment by Bill ID");
             System.out.println("4. Exit");
             System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int paymentChoice = inputReader.nextInt();
+            inputReader.nextLine();
 
-            switch (choice) {
+            switch (paymentChoice) {
                 case 1:
-                    Payment payment = new Payment();
+                    Payment newPayment = new Payment();
                     System.out.print("Bill ID: ");
-                    payment.setBillId(scanner.nextInt());
-                    scanner.nextLine();
+                    newPayment.setBillId(inputReader.nextInt());
+                    inputReader.nextLine();
                     System.out.print("Payment Method (Cash/Card/UPI/Wallet): ");
-                    payment.setPaymentMethod(Payment.PaymentMethod.valueOf(scanner.nextLine()));
+                    newPayment.setPaymentMethod(Payment.PaymentMethod.valueOf(inputReader.nextLine()));
                     System.out.print("Amount Paid: ");
-                    payment.setAmountPaid(scanner.nextDouble());
-                    payment.setPaymentTime(new Timestamp(System.currentTimeMillis()));
-                    payment.setStatus(Payment.Status.Successful);
-                    paymentDAO.recordPayment(payment);
+                    newPayment.setAmountPaid(inputReader.nextDouble());
+                    newPayment.setPaymentTime(new Timestamp(System.currentTimeMillis()));
+                    newPayment.setStatus(Payment.Status.Successful);
+                    paymentRepository.recordPayment(newPayment);
                     System.out.println("Payment recorded successfully.");
                     break;
 
                 case 2:
-                    List<Payment> payments = paymentDAO.getAllPayments();
+                    List<Payment> allPayments = paymentRepository.getAllPayments();
                     System.out.println("---- Payments ----");
-                    for (Payment p : payments) {
-                        System.out.println(p.getPaymentId() + ": Bill " + p.getBillId() + " | Method: " + p.getPaymentMethod() + " | Amount: " + p.getAmountPaid());
+                    for (Payment currentPayment : allPayments) {
+                        System.out.println(currentPayment.getPaymentId() + ": Bill " + currentPayment.getBillId() + " | Method: " + currentPayment.getPaymentMethod() + " | Amount: " + currentPayment.getAmountPaid());
                     }
                     break;
 
                 case 3:
                     System.out.print("Enter Bill ID: ");
-                    int billId = scanner.nextInt();
-                    Payment paymentByBill = paymentDAO.getPaymentByBillId(billId);
-                    if (paymentByBill != null) {
-                        System.out.println("Payment ID: " + paymentByBill.getPaymentId() + " | Amount: " + paymentByBill.getAmountPaid() + " | Method: " + paymentByBill.getPaymentMethod());
+                    int billIdForPayment = inputReader.nextInt();
+                    Payment paymentForBill = paymentRepository.getPaymentByBillId(billIdForPayment);
+                    if (paymentForBill != null) {
+                        System.out.println("Payment ID: " + paymentForBill.getPaymentId() + " | Amount: " + paymentForBill.getAmountPaid() + " | Method: " + paymentForBill.getPaymentMethod());
                     } else {
                         System.out.println("Payment not found for this bill.");
                     }
                     break;
 
                 case 4:
-                    return;
+                    continuePaymentManagement = false;
+                    break;
 
                 default:
                     System.out.println("Invalid option. Try again.");
@@ -439,10 +444,11 @@ public class Main {
         }
     }
 
-    private static void handleTableBookingManagement(RestaurantDaoFactory daoFactory, Scanner scanner) {
-        TableBookingDao bookingDAO = daoFactory.getTableBookingDAO();
+    private static void manageTableBookings(RestaurantDaoFactory factory, Scanner inputReader) {
+        TableBookingDao bookingRepository = factory.getTableBookingDAO();
 
-        while (true) {
+        boolean continueBookingManagement = true;
+        while (continueBookingManagement) {
             System.out.println("\n=== Table Booking Management ===");
             System.out.println("1. Add Booking");
             System.out.println("2. View All Bookings");
@@ -450,44 +456,44 @@ public class Main {
             System.out.println("4. Delete Booking");
             System.out.println("5. Exit");
             System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int bookingChoice = inputReader.nextInt();
+            inputReader.nextLine();
 
-            switch (choice) {
+            switch (bookingChoice) {
                 case 1:
-                    TableBooking booking = new TableBooking();
+                    TableBooking newBooking = new TableBooking();
                     System.out.print("Customer ID: ");
-                    booking.setCustomerId(scanner.nextInt());
+                    newBooking.setCustomerId(inputReader.nextInt());
                     System.out.print("Table ID: ");
-                    booking.setTableId(scanner.nextInt());
-                    scanner.nextLine();
+                    newBooking.setTableId(inputReader.nextInt());
+                    inputReader.nextLine();
                     System.out.print("Booking Date (YYYY-MM-DD): ");
-                    booking.setBookingDate(Date.valueOf(scanner.nextLine()));
+                    newBooking.setBookingDate(Date.valueOf(inputReader.nextLine()));
                     System.out.print("Booking Time (HH:MM:SS): ");
-                    booking.setBookingTime(Time.valueOf(scanner.nextLine()));
-                    booking.setStatus(TableBooking.Status.Confirmed);
-                    booking.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-                    bookingDAO.addBooking(booking);
+                    newBooking.setBookingTime(Time.valueOf(inputReader.nextLine()));
+                    newBooking.setStatus(TableBooking.Status.Confirmed);
+                    newBooking.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                    bookingRepository.addBooking(newBooking);
                     System.out.println("Booking added successfully.");
                     break;
 
                 case 2:
-                    List<TableBooking> bookings = bookingDAO.getAllBookings();
+                    List<TableBooking> allBookings = bookingRepository.getAllBookings();
                     System.out.println("---- Bookings ----");
-                    for (TableBooking b : bookings) {
-                        System.out.println(b.getBookingId() + ": Customer " + b.getCustomerId() + " | Table " + b.getTableId() + " | Date: " + b.getBookingDate() + " | Status: " + b.getStatus());
+                    for (TableBooking currentBooking : allBookings) {
+                        System.out.println(currentBooking.getBookingId() + ": Customer " + currentBooking.getCustomerId() + " | Table " + currentBooking.getTableId() + " | Date: " + currentBooking.getBookingDate() + " | Status: " + currentBooking.getStatus());
                     }
                     break;
 
                 case 3:
                     System.out.print("Enter Booking ID to update: ");
-                    int updateId = scanner.nextInt();
-                    scanner.nextLine();
-                    TableBooking bookingToUpdate = bookingDAO.getBookingById(updateId);
-                    if (bookingToUpdate != null) {
+                    int bookingIdToUpdate = inputReader.nextInt();
+                    inputReader.nextLine();
+                    TableBooking existingBooking = bookingRepository.getBookingById(bookingIdToUpdate);
+                    if (existingBooking != null) {
                         System.out.print("New Status (Confirmed/Cancelled/Completed): ");
-                        bookingToUpdate.setStatus(TableBooking.Status.valueOf(scanner.nextLine()));
-                        bookingDAO.updateBooking(bookingToUpdate);
+                        existingBooking.setStatus(TableBooking.Status.valueOf(inputReader.nextLine()));
+                        bookingRepository.updateBooking(existingBooking);
                         System.out.println("Booking status updated.");
                     } else {
                         System.out.println("Booking not found.");
@@ -496,13 +502,14 @@ public class Main {
 
                 case 4:
                     System.out.print("Enter Booking ID to delete: ");
-                    int deleteId = scanner.nextInt();
-                    bookingDAO.deleteBooking(deleteId);
+                    int bookingIdToDelete = inputReader.nextInt();
+                    bookingRepository.deleteBooking(bookingIdToDelete);
                     System.out.println("Booking deleted.");
                     break;
 
                 case 5:
-                    return;
+                    continueBookingManagement = false;
+                    break;
 
                 default:
                     System.out.println("Invalid option. Try again.");
@@ -510,10 +517,11 @@ public class Main {
         }
     }
 
-    private static void handleBillManagement(RestaurantDaoFactory daoFactory, Scanner scanner) {
-        BillDao billDAO = daoFactory.getBillDAO();
+    private static void manageBills(RestaurantDaoFactory factory, Scanner inputReader) {
+        BillDao billRepository = factory.getBillDAO();
 
-        while (true) {
+        boolean continueBillManagement = true;
+        while (continueBillManagement) {
             System.out.println("\n=== Bill Management ===");
             System.out.println("1. Generate Bill");
             System.out.println("2. View All Bills");
@@ -523,67 +531,67 @@ public class Main {
             System.out.println("6. Delete Bill");
             System.out.println("7. Exit");
             System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int billChoice = inputReader.nextInt();
+            inputReader.nextLine();
 
-            switch (choice) {
+            switch (billChoice) {
                 case 1:
-                    Bill bill = new Bill();
+                    Bill newBill = new Bill();
                     System.out.print("Order ID: ");
-                    bill.setOrderId(scanner.nextInt());
+                    newBill.setOrderId(inputReader.nextInt());
                     System.out.print("Total Amount: ");
-                    bill.setTotalAmount(scanner.nextDouble());
+                    newBill.setTotalAmount(inputReader.nextDouble());
                     System.out.print("Discount: ");
-                    bill.setDiscount(scanner.nextDouble());
+                    newBill.setDiscount(inputReader.nextDouble());
                     System.out.print("Tax: ");
-                    bill.setTax(scanner.nextDouble());
-                    bill.setFinalAmount(bill.getTotalAmount() - bill.getDiscount() + bill.getTax());
-                    bill.setPaymentStatus(Bill.PaymentStatus.Unpaid);
-                    bill.setGeneratedAt(new Timestamp(System.currentTimeMillis()));
-                    billDAO.generateBill(bill);
+                    newBill.setTax(inputReader.nextDouble());
+                    newBill.setFinalAmount(newBill.getTotalAmount() - newBill.getDiscount() + newBill.getTax());
+                    newBill.setPaymentStatus(Bill.PaymentStatus.Unpaid);
+                    newBill.setGeneratedAt(new Timestamp(System.currentTimeMillis()));
+                    billRepository.generateBill(newBill);
                     System.out.println("Bill generated successfully.");
                     break;
 
                 case 2:
-                    List<Bill> unpaidBills = billDAO.getUnpaidBills();
+                    List<Bill> outstandingBills = billRepository.getUnpaidBills();
                     System.out.println("---- Bills ----");
-                    for (Bill b : unpaidBills) {
-                        System.out.println(b.getBillId() + ": Order " + b.getOrderId() + " | Total: " + b.getTotalAmount() + " | Final: " + b.getFinalAmount() + " | Status: " + b.getPaymentStatus());
+                    for (Bill currentBill : outstandingBills) {
+                        System.out.println(currentBill.getBillId() + ": Order " + currentBill.getOrderId() + " | Total: " + currentBill.getTotalAmount() + " | Final: " + currentBill.getFinalAmount() + " | Status: " + currentBill.getPaymentStatus());
                     }
                     break;
 
                 case 3:
                     System.out.print("Enter Order ID: ");
-                    int orderId = scanner.nextInt();
-                    Bill billByOrder = billDAO.getBillByOrderId(orderId);
-                    if (billByOrder != null) {
-                        System.out.println("Bill ID: " + billByOrder.getBillId() + " | Total: " + billByOrder.getTotalAmount() + " | Final: " + billByOrder.getFinalAmount());
+                    int orderIdForBill = inputReader.nextInt();
+                    Bill billForOrder = billRepository.getBillByOrderId(orderIdForBill);
+                    if (billForOrder != null) {
+                        System.out.println("Bill ID: " + billForOrder.getBillId() + " | Total: " + billForOrder.getTotalAmount() + " | Final: " + billForOrder.getFinalAmount());
                     } else {
                         System.out.println("Bill not found for this order.");
                     }
                     break;
 
                 case 4:
-                    List<Bill> allUnpaidBills = billDAO.getUnpaidBills();
+                    List<Bill> pendingBills = billRepository.getUnpaidBills();
                     System.out.println("---- Unpaid Bills ----");
-                    for (Bill b : allUnpaidBills) {
-                        System.out.println(b.getBillId() + ": Order " + b.getOrderId() + " | Final Amount: " + b.getFinalAmount());
+                    for (Bill unpaidBill : pendingBills) {
+                        System.out.println(unpaidBill.getBillId() + ": Order " + unpaidBill.getOrderId() + " | Final Amount: " + unpaidBill.getFinalAmount());
                     }
                     break;
 
                 case 5:
                     System.out.print("Enter Bill ID to update: ");
-                    int updateId = scanner.nextInt();
-                    Bill billToUpdate = billDAO.getBillById(updateId);
-                    if (billToUpdate != null) {
+                    int billIdToUpdate = inputReader.nextInt();
+                    Bill existingBill = billRepository.getBillById(billIdToUpdate);
+                    if (existingBill != null) {
                         System.out.print("New Total Amount: ");
-                        billToUpdate.setTotalAmount(scanner.nextDouble());
+                        existingBill.setTotalAmount(inputReader.nextDouble());
                         System.out.print("New Discount: ");
-                        billToUpdate.setDiscount(scanner.nextDouble());
+                        existingBill.setDiscount(inputReader.nextDouble());
                         System.out.print("New Tax: ");
-                        billToUpdate.setTax(scanner.nextDouble());
-                        billToUpdate.setFinalAmount(billToUpdate.getTotalAmount() - billToUpdate.getDiscount() + billToUpdate.getTax());
-                        billDAO.updateBill(billToUpdate);
+                        existingBill.setTax(inputReader.nextDouble());
+                        existingBill.setFinalAmount(existingBill.getTotalAmount() - existingBill.getDiscount() + existingBill.getTax());
+                        billRepository.updateBill(existingBill);
                         System.out.println("Bill updated.");
                     } else {
                         System.out.println("Bill not found.");
@@ -592,13 +600,14 @@ public class Main {
 
                 case 6:
                     System.out.print("Enter Bill ID to delete: ");
-                    int deleteId = scanner.nextInt();
-                    billDAO.deleteBill(deleteId);
+                    int billIdToDelete = inputReader.nextInt();
+                    billRepository.deleteBill(billIdToDelete);
                     System.out.println("Bill deleted.");
                     break;
 
                 case 7:
-                    return;
+                    continueBillManagement = false;
+                    break;
 
                 default:
                     System.out.println("Invalid option. Try again.");
